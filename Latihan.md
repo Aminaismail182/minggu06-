@@ -1,139 +1,147 @@
-Materi dan Penjelasan
+<h1>Praktikum Minggu-10(Docker Networking)</h1>
 
-Perbedaan antara docker, docker compose, dan docker swarm.
-https://www.quora.com/Whats-the-difference-between-Docker-Swarm-Docker-Compose-and-Docker-Networks
+Untuk melakukan praktikum ini harus terlebih dahulu Login ke akun Docker masing-masing agar dapat menggunakan terminal yang sudah disediakan
 
-Networking di Docker, beserta beberapa tutorial.
-https://docs.docker.com/network/
+<h2>#1-Networking Basics</h2>
 
-Dokumentasi docker compose.
-https://docs.docker.com/compose/
+1. The Docker Network Command
 
-Dokumentasi docker swarm.
-https://docs.docker.com/engine/swarm/
+![gambar1](gambar1.png)
 
-latihan
-Mulai dengan Susunan Docker
+2. List Network
 
-Langkah 1: Pengaturan 🔗
-Buat direktori untuk proyek
+![gambar1](gambar2.png)
 
-Starting "default"...
-(default) Check network to re-create if needed...
-(default) Windows might ask for the permission to configure a dhcp server. Sometimes, such confirmation window is minimized in the taskbar.
-(default) Waiting for an IP...
-Machine "default" was started.
-Waiting for SSH to be available...
-Detecting the provisioner...
-Started machines may have new IP addresses. You may need to re-run the `docker-machine env` command.
-Regenerate TLS machine certs?  Warning: this is irreversible. (y/n): Regenerating TLS certificates
-Waiting for SSH to be available...
-Detecting the provisioner...
-Copying certs to the local machine directory...
-Copying certs to the remote machine...
-Setting Docker configuration on the remote daemon...
+3. Inspect a Network
 
+![gambar1](gambar3.png)
 
+4. List Network driver plugins
 
-                        ##         .
-                  ## ## ##        ==
-               ## ## ## ## ##    ===
-           /"""""""""""""""""\___/ ===
-      ~~~ {~~ ~~~~ ~~~ ~~~~ ~~~ ~ /  ===- ~~~
-           \______ o           __/
-             \    \         __/
-              \____\_______/
+![gambar1](gambar4.png)
 
-docker is configured to use the default machine with IP 192.168.99.100
-For help getting started, check out the docs at https://docs.docker.com
+<h2>#2-Bridge Networking</h2>
 
+1. The basic
 
-Start interactive shell
+![gambar1](gambar5.png)
+![gambar1](gambar6.png)
+![gambar1](gambar7.png)
 
-Lenovo@DESKTOP-RC8LHGO MINGW64 /c/Program Files/Docker Toolbox
-$ docker --version
-Docker version 19.03.1, build 74b1e89e8a
+//Menampilkan daftar container networks
+$ docker network ls
 
-Lenovo@DESKTOP-RC8LHGO MINGW64 /c/Program Files/Docker Toolbox
-$ docker run hello-world
+//Mengupdate dan install packages bridge-utils
+$ apk update
 
-Hello from Docker!
-This message shows that your installation appears to be working correctly.
+//Menambahkan packages bridge-utils
+$ apk add bridge
 
-To generate this message, Docker took the following steps:
- 1. The Docker client contacted the Docker daemon.
- 2. The Docker daemon pulled the "hello-world" image from the Docker Hub.    (amd64)
- 3. The Docker daemon created a new container from that image which runs the
-    executable that produces the output you are currently reading.
- 4. The Docker daemon streamed that output to the Docker client, which sent it
-    to your terminal.
+//Menampilkan daftar bridges pada Docker host 
+$ brctl show
 
-To try something more ambitious, you can run an Ubuntu container with:
- $ docker run -it ubuntu bash
+//Melihat detail bridge
+$ ip a
 
-Share images, automate workflows, and more with a free Docker ID:
- https://hub.docker.com/
+2. Connect a container
 
-For more examples and ideas, visit:
- https://docs.docker.com/get-started/
+![gambar1](gambar8.png)
+![gambar1](gambar9.png)
+![gambar1](gambar10.png)
+//Membuat container baru
+$ docker run -dt ubuntu sleep infinity
 
+//Melihat spek container network
+$ docker ps
 
-Lenovo@DESKTOP-RC8LHGO MINGW64 /c/Program Files/Docker Toolbox
-$ docker image ls
-REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
-<none>              <none>              de108dc4f937        5 days ago          64.2MB
-figletku            latest              40fe66c660de        5 days ago          64.2MB
-nginx               latest              ed21b7a8aee9        2 weeks ago         127MB
-alpine              latest              a187dde48cd2        3 weeks ago         5.6MB
-ubuntu              latest              4e5021d210f6        3 weeks ago         64.2MB
-hello-world         latest              fce289e99eb9        15 months ago       1.84kB
+//Menampilkan daftar bridges pada Docker host 
+$ brctl show
 
-Lenovo@DESKTOP-RC8LHGO MINGW64 /c/Program Files/Docker Toolbox
-$ hello-world
-bash: hello-world: command not found
+//Menampilkan lampiran pada container bridge
+$ docker network inspect bridge
 
-Lenovo@DESKTOP-RC8LHGO MINGW64 /c/Program Files/Docker Toolbox
-$ docker container run hello-world
+3. Test Network Connectivity
 
-Hello from Docker!
-This message shows that your installation appears to be working correctly.
+![gambar1](ping.png)
+![gambar1](ps11.png)
+![gambar1](gambar12.png)
+![gambar1](gambar13.png)
 
-To generate this message, Docker took the following steps:
- 1. The Docker client contacted the Docker daemon.
- 2. The Docker daemon pulled the "hello-world" image from the Docker Hub.    (amd64)
- 3. The Docker daemon created a new container from that image which runs the
-    executable that produces the output you are currently reading.
- 4. The Docker daemon streamed that output to the Docker client, which sent it
-    to your terminal.
+//Mengetes jaringan (ping)
+$ ping -c5 172.17.0.2
 
-To try something more ambitious, you can run an Ubuntu container with:
- $ docker run -it ubuntu bash
+//Melihat spek container network
+$ docker ps
 
-Share images, automate workflows, and more with a free Docker ID:
- https://hub.docker.com/
+//Masuk terminal ubuntu
+$ docker exec -it yourcontainerid /bin/bash
 
-For more examples and ideas, visit:
- https://docs.docker.com/get-started/
+//Menginstall program ping
+$ apt-get update && apt-get install -y iputils-ping
 
+//Mengetes jaringan (ping)
+$ ping -c5 www.github.com
 
-Lenovo@DESKTOP-RC8LHGO MINGW64 /c/Program Files/Docker Toolbox
-$
+4. Configure NAT for external connectivity
 
+![gambar1](gambar14.png)
+![gambar1](gambar15.png)
 
+//Menjalankan container baru dari official NGINX image
+$ docker run --name web1 -d -p 8080:80 nginx
 
+//Melihat spek container network
+$ docker ps
 
+//Menghubungkan ke docker host
+$ curl 127.0.0.1:8080
 
+<h2>#3-Overlay Networking</h2>
 
+1. The basic
 
+![gambar1](gambar16.png)
+![gambar1](gambar17.png)
+![gambar1](gambar18.png)
 
+//Menginisialisasi docker swarm baru
+$ docker swarm init --advertise-addr $(hostname -i)
 
+//Menggabungkan node
+$ docker swarm join \
+>     --token SWMTKN-1-69b2x1u2wtjdmot0oqxjw1r2d27f0lbmhfxhvj83chln1l6es5-37ykdpul0vylenefe2439cqpf \
+>     10.0.0.5:2377
 
+//Melihat daftar node
+$ docker node ls
 
+2. Create an overlay network 
 
+![gambar1](gambar19.png)
+![gambar1](gambar20.png)
 
+//Membuat sebuah overlay network
+$ docker network create -d overlay overnet
 
+//Mengecek/menampilkan network
+$ docker network ls
 
+//Melihat lebih detail informasi mengenai overnet network
+$ docker network inspect overnet
 
+3. Create a service
 
+![gambar1](gambar21.png)
 
+<h2>#4-Cleaning Up</h2>
 
+![gambar1](clean.png)
+
+//Menghspus layanan
+$ docker service rm myservice
+
+//Melihat spek container network
+$ docker ps
+
+//Menghapus node
+$ docker swarm leave --force
